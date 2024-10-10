@@ -170,5 +170,15 @@ router.put('/updateFundraiser/:id', (req, res) => {
     })
 })
 
+router.delete("/delete/:id", (req, res) => {
+    connection.query("delete from FUNDRAISER where FUNDRAISER_ID=" + req.params.id, (err, records, fields) => {
+        if (err) {
+            console.error("Error while deleting the data");
+        } else {
+            res.send({ delete: "Delete Sucess" });
+        }
+    })
+})
+
 // Export the router so it can be used in other parts of the application
 module.exports = router;
