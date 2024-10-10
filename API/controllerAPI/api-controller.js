@@ -153,17 +153,22 @@ router.post('/fundraiser', (req, res) => {
 });
 
 
-
-// Commented out route - possibly for future use or reference
-// router.get("/:id", (req, res) => {
-//     connection.query("select * from FUNDRAISER where FUNDRAISER_ID=" + req.params.id, (err, records, fields) => {
-//         if (err) {
-//             console.error("Error while retrieve the data");
-//         } else {
-//             res.send(records);
-//         }
-//     })
-// })
+router.put('/updateFundraiser/:id', (req, res) => {
+    const fundraiserId = req.params.id;
+    const { ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID } = req.body;
+    const query = `
+          UPDATE FUNDRAISER
+          SET ORGANIZER = ?, CAPTION = ?, TARGET_FUNDING = ?, CURRENT_FUNDING = ?, CITY = ?, ACTIVE = ?, CATEGORY_ID = ?
+          WHERE FUNDRAISER_ID = ?
+        `;
+    connection.query(query, [ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID, fundraiserId], (err, result) => {
+        if (err) {
+            console.error("Error while Updating the data" + err);
+        } else {
+            res.send({ update: "success" });
+        }
+    })
+})
 
 // Export the router so it can be used in other parts of the application
 module.exports = router;
