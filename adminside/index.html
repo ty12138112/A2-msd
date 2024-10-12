@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Charity Champions</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Layout styles */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            flex: 1;
+            background-color: #e0e0ff;
+            opacity: 0.7;
+        }
+
+        .content {
+            flex: 2;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header styles */
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Navigation styles */
+        nav {
+            margin: 20px 0;
+        }
+
+        nav a {
+            color: #4a90e2;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        /* Form styles */
+        .form-section {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <!-- Left sidebar -->
+        <div class="sidebar"></div>
+
+        <!-- Main content area -->
+        <div class="content">
+            <!-- Header section -->
+            <header>
+                <h1>Admin Dashboard</h1>
+            </header>
+
+            <!-- Fundraisers section -->
+            <section id="fundraisers">
+                <h2>All Fundraisers</h2>
+                <!-- Container for dynamically loaded fundraiser cards -->
+                <div id="fundraisers-list"></div>
+            </section>
+
+
+
+            <!-- Form to Add New Fundraiser -->
+            <section class="form-section">
+                <h2>Add Fundraiser</h2>
+                <form id="form1" onsubmit="return(false);">
+
+                    <label>Organizer</label>
+                    <input type="text" id="organizer" placeholder="Enter organizer" required><br>
+
+                    <label>Caption</label>
+                    <input type="text" id="caption" placeholder="Enter caption" required><br>
+
+                    <label>Target funding</label>
+                    <input type="text" id="target" placeholder="Enter target funding" required><br>
+
+                    <label>Curent funding</label>
+                    <input type="text" id="curent" placeholder="Enter curent funding" required><br>
+
+                    <label>City</label>
+                    <input type="text" id="city" placeholder="Enter city" required><br>
+
+                    Active:
+                    <select id="active" required>
+                        <option value="0">Inactive</option>
+                        <option value="1">Active</option>
+                    </select><br>
+
+                    Category:
+                    <select id="category" required>
+                        <option value="1">Technology</option>
+                        <option value="2">Art</option>
+                        <option value="3">Wildlife Conservation</option>
+                        <option value="4">Education</option>
+                        <option value="5">Healthcare</option>
+                        <option value="6">Environment</option>
+                        <option value="7">Community Development</option>
+                        <option value="8">Sports</option>
+                    </select>
+
+                    <input type="submit" onclick="validateForm1()" value="Save">
+
+                </form>
+            </section>
+
+            <!-- Form to Update Fundraiser -->
+            <form id="form2" onsubmit="return(false);" class="form-section">
+                <h2>Add Fundraiser</h2>
+                <label>ID</label>
+                <input type="text" id="fundraiser-id" placeholder="Enter id" required>
+                <label>Organizer</label>
+                <input type="text" id="organizer-update" placeholder="Enter organizer" required><br>
+
+                <label>Caption</label>
+                <input type="text" id="caption-update" placeholder="Enter caption" required><br>
+
+                <label>Target funding</label>
+                <input type="text" id="target-update" placeholder="Enter target funding" required><br>
+
+                <label>Current funding</label>
+                <input type="text" id="curent-update" placeholder="Enter current funding" required><br>
+
+                <label>City</label>
+                <input type="text" id="city-update" placeholder="Enter city" required><br>
+
+                Active:
+                <select id="active-update" required>
+                    <option value="0">Inactive</option>
+                    <option value="1">Active</option>
+                </select><br>
+
+                Category:
+                <select id="category-update" required>
+                    <option value="1">Technology</option>
+                    <option value="2">Art</option>
+                    <option value="3">Wildlife Conservation</option>
+                    <option value="4">Education</option>
+                    <option value="5">Healthcare</option>
+                    <option value="6">Environment</option>
+                    <option value="7">Community Development</option>
+                    <option value="8">Sports</option>
+                </select>
+
+                <input type="submit" onclick="validateForm2()" value="Update">
+            </form>
+
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="sidebar"></div>
+    </div>
+
+    <script>
+        // Fetch fundraiser data from the API
+        fetch("http://localhost:3060/api/crowdfunding/fundraiser")
+            .then(response => response.json()) // Convert the response to JSON
+            .then(data => {
+                // Get the container for fundraiser cards
+                const list = document.getElementById('fundraisers-list');
+                // Iterate through each fundraiser in the data
+                data.forEach(f => {
+                    // Create HTML for each fundraiser card
+                    list.innerHTML += `
+                        <div class="fundraiser">
+                            <img src="image/${f.FUNDRAISER_ID}.png" alt="${f.CAPTION}">
+                            <h3>${f.CAPTION}</h3>
+                            <p>Organiser: ${f.FUNDRAISER_ID}</p>
+                            <p>Organiser: ${f.ORGANIZER || 'Not specified'}</p>
+                            <p>City: ${f.CITY}</p>
+                            <p>Category: ${f.category_name}</p>
+                            <p>Target: ${f.TARGET_FUNDING} AUD</p>
+                            <p>Raised: ${f.CURRENT_FUNDING} AUD</p>
+                            <a href="#" onclick="deleteByID(${f.FUNDRAISER_ID})">Delete</a>
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => {
+                // Handle any errors that occur during the fetch
+                console.error("Error fetching data:", error);
+                document.getElementById('fundraisers-list').innerHTML = "Failed to load fundraisers. Please try again later.";
+            });
+
+        function validateForm1() {
+            // Get values from the form using DOM
+            const ORGANIZER = document.getElementById('organizer').value.trim();
+            const CAPTION = document.getElementById('caption').value.trim();
+            const TARGET = document.getElementById('target').value;
+            const CURRENT = document.getElementById('curent').value;
+            const CITY = document.getElementById('city').value.trim();
+            const ACTIVE = document.getElementById('active').value;
+            const CATEGORY_ID = document.getElementById('category').value;
+
+            // Validate the form. Assume, all fields are required
+            if (!ORGANIZER || !CAPTION || !TARGET || !CURRENT || !CITY || !ACTIVE || !CATEGORY_ID) {
+                alert("All fields are required!");
+                return;
+            }
+
+            // Create a data (JSON) to send in the POST request
+            const postData = {
+                'ORGANIZER': ORGANIZER,
+                'CAPTION': CAPTION,
+                'TARGET_FUNDING': TARGET,
+                'CURRENT_FUNDING': CURRENT,
+                'CITY': CITY,
+                'ACTIVE': ACTIVE,
+                'CATEGORY_ID': CATEGORY_ID
+            };
+
+            // Send the POST request to NodeJS API server
+            fetch('http://localhost:3060/api/crowdfunding/fundraiser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.insert === 'success') {
+                        alert("Fundraiser added successfully!");
+                        document.getElementById('form1').reset(); // to clear the form                    
+                    } else if (data.insert === 'error') {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        }
+
+
+        function validateForm2() {
+            // Get values from the form using DOM
+            const FUNDRAISER_ID = document.getElementById('fundraiser-id').value.trim();
+            const ORGANIZER = document.getElementById('organizer-update').value.trim();
+            const CAPTION = document.getElementById('caption-update').value.trim();
+            const TARGET = document.getElementById('target-update').value.trim();
+            const CURRENT = document.getElementById('curent-update').value.trim();
+            const CITY = document.getElementById('city-update').value.trim();
+            const ACTIVE = document.getElementById('active-update').value;
+            const CATEGORY_ID = document.getElementById('category-update').value;
+
+            // Validate the form. Assume all fields are required
+            if (!FUNDRAISER_ID || !ORGANIZER || !CAPTION || !TARGET || !CURRENT || !CITY || !ACTIVE || !CATEGORY_ID) {
+                alert("All fields are required!");
+                return;
+            }
+
+            // Create a data (JSON) to send in the request
+            const postData = {
+                'FUNDRAISER_ID': FUNDRAISER_ID,
+                'ORGANIZER': ORGANIZER,
+                'CAPTION': CAPTION,
+                'TARGET_FUNDING': TARGET,
+                'CURRENT_FUNDING': CURRENT,
+                'CITY': CITY,
+                'ACTIVE': ACTIVE,
+                'CATEGORY_ID': CATEGORY_ID
+            };
+
+            // Update existing fundraiser
+            fetch(`http://localhost:3060/api/crowdfunding/updateFundraiser/${FUNDRAISER_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.update === 'success') {
+                        alert("Fundraiser updated successfully!");
+                        document.getElementById('form2').reset(); // to clear the form                    
+                    } else {
+                        alert("Error: " + (data.message || "Unknown error occurred"));
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred while updating the fundraiser. Please try again.");
+                });
+        }
+
+
+        function deleteByID(id){
+            // Send DELETE request to API
+            fetch('http://localhost:3060/api/crowdfunding/delete/'+id, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+              alert(data.delete);
+                if (data.delete === 'success') {
+                    alert("Fundraiser deleted successfully!");
+                } else if (data.delete === 'error') {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+
+
+
+
+
+    </script>
+</body>
+
+</html>
