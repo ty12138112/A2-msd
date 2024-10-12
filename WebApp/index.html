@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Ensures proper rendering and touch zooming for all devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity Champions</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif; /* Set the font for the entire page */
+            line-height: 1.6; /* Set line height for better readability */
+            color: #333; /* Set text color */
+            margin: 0; /* Remove default body margin */
+            padding: 0; /* Remove default body padding */
+            background-color: #f0f0f0; /* Set page background color */
+        }
+        /* Wrapper for the entire page content */
+        .wrapper {
+            display: flex; /* Use flexbox layout */
+            min-height: 100vh; /* Set minimum height to viewport height */
+        }
+        /* Sidebar styles */
+        .sidebar {
+            flex: 1; /* Flex grow factor of 1 */
+            background-color: #e0e0ff; /* Set sidebar background color */
+            opacity: 0.7; /* Set opacity */
+        }
+        /* Main content area styles */
+        .content {
+            flex: 2; /* Flex grow factor of 2, takes up more space */
+            max-width: 800px; /* Set maximum width */
+            background-color: white; /* Set background to white */
+            padding: 20px; /* Add padding */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Add shadow effect */
+        }
+        /* Header styles */
+        header {
+            background-color: #4a90e2; /* Set header background color */
+            color: white; /* Set text color to white */
+            padding: 20px; /* Add padding */
+            text-align: center; /* Center align text */
+        }
+        /* Navigation styles */
+        nav {
+            margin: 20px 0; /* Set top and bottom margin */
+        }
+        nav a {
+            color: #4a90e2; /* Set link color */
+            text-decoration: none; /* Remove underline */
+            margin-right: 15px; /* Set right margin */
+        }
+        /* Individual fundraiser card styles */
+        .fundraiser {
+            background-color: #f4f4f4; /* Set background color */
+            border: 1px solid #ddd; /* Add border */
+            padding: 15px; /* Add padding */
+            margin-bottom: 15px; /* Set bottom margin */
+            border-radius: 5px; /* Add rounded corners */
+        }
+        /* Grid layout for fundraisers list */
+        #fundraisers-list {
+            display: grid; /* Use grid layout */
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Auto-fill columns, minimum 200px wide */
+            gap: 20px; /* Set grid gap */
+        }
+        /* Ensure fundraiser images are responsive */
+        .fundraiser img {
+            max-width: 100%; /* Maximum width is container width */
+            height: auto; /* Height adjusts automatically to maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+    <!-- Main wrapper -->
+    <div class="wrapper">
+        <!-- Left sidebar -->
+        <div class="sidebar"></div>
+        <!-- Main content area -->
+        <div class="content">
+            <!-- Page header -->
+            <header>
+                <h1>Charity Champions</h1>
+            </header>
+
+            <!-- Navigation menu -->
+            <nav>
+                <a href="/">Home</a>
+                <a href="/search">Search</a>
+                <a href="/fundraisers">Fundraisers</a>
+            </nav>
+
+            <!-- About section -->
+            <section id="about">
+                <h2>About Us</h2>
+                <p>We connect passionate individuals with meaningful causes, enabling people to create and support fundraisers that make a real difference in communities worldwide.</p>
+            </section>
+
+            <!-- Fundraisers section -->
+            <section id="fundraisers">
+                <h2>Active Fundraisers</h2>
+                <!-- Container for dynamically loaded fundraiser cards -->
+                <div id="fundraisers-list"></div>
+            </section>
+
+            <!-- Contact section -->
+            <section id="contact">
+                <h2>Contact Us</h2>
+                <p>Email: info@charitychampions.org | Phone: (555) 123-4567</p>
+            </section>
+        </div>
+        <!-- Right sidebar -->
+        <div class="sidebar"></div>
+    </div>
+
+    <script>
+        // Fetch fundraiser data from the API
+        fetch("http://localhost:3060/api/crowdfunding/FUNDRAISER")
+            .then(response => response.json()) // Convert the response to JSON
+            .then(data => {
+                // Get the container for fundraiser cards
+                const list = document.getElementById('fundraisers-list');
+                // Iterate through each fundraiser in the data
+                data.forEach(f => {
+                    // Create HTML for each fundraiser card
+                    list.innerHTML += `
+                        <div class="fundraiser">
+                            <img src="image/${f.FUNDRAISER_ID}.png" alt="${f.CAPTION}">
+                            <h3>${f.CAPTION}</h3>
+                            <p>Organiser: ${f.ORGANIZER || 'Not specified'}</p>
+                            <p>City: ${f.CITY}</p>
+                            <p>Category: ${f.category_name}</p>
+                            <p>Target: ${f.TARGET_FUNDING} AUD</p>
+                            <p>Raised: ${f.CURRENT_FUNDING} AUD</p>
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => {
+                // Handle any errors that occur during the fetch
+                console.error("Error fetching data:", error);
+                document.getElementById('fundraisers-list').innerHTML = "Failed to load fundraisers. Please try again later.";
+            });
+    </script>
+</body>
+</html>

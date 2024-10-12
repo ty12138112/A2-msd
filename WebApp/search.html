@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Ensures proper rendering and touch zooming for all devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity Champions</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Wrapper for the entire page content */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            flex: 1;
+            background-color: #e0e0ff;
+            opacity: 0.7;
+        }
+
+        /* Main content area styles */
+        .content {
+            flex: 2;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header styles */
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Navigation styles */
+        nav {
+            margin: 20px 0;
+        }
+
+        nav a {
+            color: #4a90e2;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        /* Individual fundraiser card styles */
+        .fundraiser {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        /* Form styles */
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Button styles */
+        button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #3a7bc8;
+        }
+
+        /* Error message styles */
+        #errorMessage {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main wrapper -->
+    <div class="wrapper">
+        <!-- Left sidebar -->
+        <div class="sidebar"></div>
+        <!-- Main content area -->
+        <div class="content">
+            <!-- Page header -->
+            <header>
+                <h1>Charity Champions</h1>
+            </header>
+
+            <!-- Navigation menu -->
+            <nav>
+                <a href="/">Home</a>
+                <a href="/search">Search</a>
+                <a href="/fundraisers">Fundraisers</a>
+            </nav>
+
+            <!-- About section -->
+            <section id="about">
+                <h2>About Us</h2>
+                <p>We connect passionate individuals with meaningful causes, enabling people to create and support
+                    fundraisers that make a real difference in communities worldwide.</p>
+            </section>
+
+            <!-- Fundraisers section -->
+            <section id="fundraisers">
+                <h2>Search Fundraisers</h2>
+                <!-- Search form -->
+                <form id="searchForm">
+                    <label>
+                        Organizer:
+                        <input type="text" id="organizer" name="ORGANIZER">
+                    </label>
+                    <label>
+                        City:
+                        <input type="text" id="city" name="CITY">
+                    </label>
+                    <label>
+                        Category:
+                        <select id="category" name="CATEGORY">
+                            <option value="">Select a category</option>
+                        </select>
+                    </label>
+                    <button type="submit">Search</button>
+                    <button type="button" onclick="clearInputs()">Clear</button>
+                </form>
+                <!-- Error message display area -->
+                <div id="errorMessage"></div>
+                <!-- Fundraisers list display area -->
+                <div id="fundraisers-list"></div>
+            </section>
+
+            <!-- Contact section -->
+            <section id="contact">
+                <h2>Contact Us</h2>
+                <p>Email: info@charitychampions.org | Phone: (555) 123-4567</p>
+            </section>
+        </div>
+        <!-- Right sidebar -->
+        <div class="sidebar"></div>
+    </div>
+
+    <script>
+        // Execute when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCategories();
+            loadAllFundraisers();
+        });
+
+        // Function to load categories into the dropdown
+        function loadCategories() {
+            fetch('http://localhost:3060/api/crowdfunding/CATEGORY')
+                .then(response => response.json())
+                .then(categories => {
+                    const categorySelect = document.getElementById('category');
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.NAME;
+                        option.textContent = category.NAME;
+                        categorySelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                });
+        }
+
+        // Function to load all fundraisers
+        function loadAllFundraisers() {
+            fetch('http://localhost:3060/api/crowdfunding/FUNDRAISER')
+                .then(response => response.json())
+                .then(displayResults)
+                .catch(error => {
+                    console.error('Error loading fundraisers:', error);
+                    document.getElementById('errorMessage').textContent = 'An error occurred while loading fundraisers. Please try again.';
+                });
+        }
+
+        // Event listener for form submission
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const organizer = document.getElementById('organizer').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const category = document.getElementById('category').value;
+
+            // Construct query parameters
+            let queryParams = [];
+            if (organizer) queryParams.push(`ORGANIZER=${encodeURIComponent(organizer)}`);
+            if (city) queryParams.push(`CITY=${encodeURIComponent(city)}`);
+            if (category) queryParams.push(`CATEGORY=${encodeURIComponent(category)}`);
+
+            const queryString = queryParams.length > 0 ? '?' + queryParams.join('&') : '';
+
+            // Fetch search results
+            fetch(`http://localhost:3060/api/crowdfunding/search${queryString}`)
+                .then(response => response.json())
+                .then(displayResults)
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('errorMessage').textContent = 'An error occurred while searching. Please try again.';
+                });
+        });
+
+        // Function to display search results
+        function displayResults(data) {
+            const list = document.getElementById('fundraisers-list');
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (data.length === 0) {
+                errorMessage.textContent = 'No fundraisers found.';
+                list.innerHTML = '';
+            } else {
+                errorMessage.textContent = '';
+                list.innerHTML = data.map(f => `
+                    <div class="fundraiser">
+                        <h3><a href="/fundraisers?id=${f.FUNDRAISER_ID}">${f.CAPTION}</a></h3>
+                        <p>Organizer: ${f.ORGANIZER || 'Not specified'} | City: ${f.CITY}</p>
+                        <p>Category: ${f.category_name}</p>
+                        <p>Target: ${f.TARGET_FUNDING} AUD | Raised: ${f.CURRENT_FUNDING} AUD</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Function to clear input fields and reload all fundraisers
+        function clearInputs() {
+            document.getElementById('organizer').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('errorMessage').textContent = '';
+            loadAllFundraisers();
+        }
+    </script>
+</body>
+
+</html>
